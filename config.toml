@@ -1,0 +1,59 @@
+baseURL = "https://ard1um.github.io/"
+theme = "hugo-ficurinia"
+title = "ard1um"
+languageCode = "en"
+defaultContentLanguage = "en"
+
+enableRobotsTXT = true
+canonifyURLs = true
+
+summaryLength = 70
+
+[pagination]
+pagerSize = 5
+
+[outputs]
+home = ["HTML", "RSS"]
+section = ["HTML"]
+taxonomy = ["HTML"]
+term = ["HTML"]
+
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true
+
+  [markup.goldmark.extensions.passthrough]
+    enable = true
+    [markup.goldmark.extensions.passthrough.delimiters]
+      block  = [['$$', '$$']]
+      inline = [['$', '$']]
+
+[params]
+  description = "Offensive Security research — pentesting, red team, security analysis."
+
+  posts = "posts"
+  showPostsLink = true
+
+  showTags = true
+  showRss = true
+  articleSummary = true
+
+  fontFamily = "JetBrains Mono"
+  titleFontFamily = "JetBrains Mono"
+  monospaceFontFamily = "JetBrains Mono"
+
+  enableSearch = true
+  searchbarEverywhere = true
+
+  [params.author]
+    name = "ard1um"
+    email = "ahardouchotmane@gmail.com"
+
+# Home, Posts and Tags links are added automatically by the Ficurinia theme
+# (via showPostsLink / showTags). Only declare extra links here, e.g. About.
+[menu]
+  [[menu.main]]
+    identifier = "about"
+    name = "About"
+    url = "/about/"
+    weight = 1
