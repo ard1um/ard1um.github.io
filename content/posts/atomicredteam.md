@@ -36,122 +36,86 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
 
 ## Architecture
 
-The lab is designed around a simple operational model: emulate real adversary behavior, collect telemetry from multiple hosts, and verify that the SOC pipeline can detect, correlate, enrich, and respond to it.
+The architecture is shown in three visual stages: the red-team attack source, the monitored servers, and the SOC stack that receives and handles their telemetry.
+
+### Attacks
 
 ```text
-┌────────────────────────────────────────────────────────────────────────────┐
-│                      KALI LINUX (Red Team)                                 │
-│              Nmap │ Hydra │ Metasploit │ Atomic Red Team                  │
-│                          192.168.120.128                                   │
-└───────────────────────────────┬─────────────────────────────────────────────┘
-                                │ Attacks: recon, brute force, exploitation
-                  ┌─────────────┴─────────────┐
-                  │                           │
-┌─────────────────▼──────────────┐  ┌──────────────▼────────────────────┐
-│ UBUNTU VICTIM (Linux)         │  │ WINDOWS SERVER 2019            │
-│ 192.168.120.130               │  │ 192.168.120.131               │
-│                              │  │                               │
-│ Wazuh Agent + Auditd          │  │ Wazuh Agent + Sysmon          │
-│ Suricata (NDR)                │  │ Windows Event Logs            │
-│                              │  │                               │
-└──────────────┬───────────────┘  └──────────────┬────────────────┘
-               │ TCP/UDP 1514 (logs + telemetry)           │
-               └──────────────────────────────┬────────────┘
-                                              │
-                                              ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│                    SOC SERVER — 192.168.120.129 (Docker Stack)            │
-│                                                                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────┐             │
-│  │    WAZUH     │  │   SURICATA   │  │       MISP         │             │
-│  │  SIEM + EDR  │  │    NDR       │  │ Threat Intelligence│             │
-│  │  Port: 443   │  │  eve.json    │  │ Port: 8443         │             │
-│  └──────┬───────┘  └──────┬───────┘  └────────┬──────────┘             │
-│         │                  │                    │                          │
-│         │ Webhook / alerts │ Ingestion          │ IOC enrichment           │
-│         └──────────┬───────┴────────────────────┼──────────────────────────┘
-│                    │                            │
-│             ┌──────▼────────────────────────────▼──────┐
-│             │               SHUFFLE                   │
-│             │        SOAR / Playbooks                │
-│             │          Port: 3001                    │
-│             │  Alert → MISP → TheHive → Response     │
-│             └──────────────┬──────────────────────────┘
-│                            │
-│                  ┌─────────▼──────────┐
-│                  │      THEHIVE       │
-│                  │ Case Management    │
-│                  │ Port: 9001         │
-│                  └─────────┬──────────┘
-│                            │
-│                     ┌──────▼───────┐
-│                     │   GRAFANA    │
-│                     │ SOC Dashboard│
-│                     │ Port: 3000   │
-│                     └──────────────┘
-│                                                                          │
-│ Supporting services: Graylog for log centralization, Prometheus for     │
-│ metrics, and Docker orchestration for the full SOC stack.               │
-└────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                 KALI LINUX (Red Team)                       │
+│                                                             │
+│              Nmap │ Hydra │ Metasploit                      │
+│                    192.168.120.128                          │
+└─────────────────────────────────────────────────────────────┘
 ```
-
-| Layer | Component | Purpose |
-|---|---|---|
-| Adversary | Kali Linux | Launches recon, credential attacks, exploitation, and persistence tests |
-| Endpoint telemetry | Wazuh Agent + Auditd + Sysmon | Collects host-level logs and process activity |
-| Network visibility | Suricata | Monitors suspicious traffic and protocol behavior |
-| Correlation | Wazuh | Normalizes, correlates, and alerts on attacker activity |
-| Intelligence | MISP | Enriches alerts with known indicators and threat context |
-| Automation | Shuffle | Triggers playbooks and orchestrates response actions |
-| Case handling | TheHive | Tracks incidents and analyst workflow |
-| Visualization | Grafana | Presents dashboards and operational visibility |
-
-### Attack Flow
 
 ```text
-Kali Linux
-  └─> Nmap / Hydra / Metasploit / Atomic Red Team
-       └─> Ubuntu + Windows hosts
-            └─> Wazuh + Suricata + Sysmon + Auditd
-                 └─> SOC Server
-                      └─> Wazuh alerting
-                           └─> MISP enrichment
-                                └─> Shuffle playbook
-                                     └─> TheHive case creation
-                                          └─> Response / escalation / dashboard visibility
+      Reconnaissance │ Brute force │ Exploitation
+                         │
+                         ▼
 ```
 
-### Why this architecture matters
-
-- It mirrors a realistic enterprise environment rather than a single-tool demo.
-- It validates both attack generation and defensive detection.
-- It separates signal sources by platform: Linux telemetry, Windows telemetry, and network telemetry.
-- It connects detection to response, which is where many red/blue labs stop short.
-
-This is the core value of the lab: not just detecting malicious behavior, but proving that the full chain from telemetry to investigation to response is operational.
-
-## Detection and Response Model
+### Our Servers
 
 ```text
-Raw Attack  ->  Collection  ->  Correlation  ->  Enrichment  ->  Response
-Kali         Wazuh Agent  Wazuh         MISP            Wazuh Active Response
-             Suricata     Suricata      Shuffle         TheHive
-             Sysmon       (SIEM+XDR)    TheHive         Grafana
-             Auditd
+┌─────────────────────────────────────────────────────────────┐
+│                    MONITORED HOSTS                          │
+│                                                             │
+│  ┌────────────────────────┐    ┌────────────────────────┐   │
+│  │ UBUNTU VICTIM (Linux)  │    │ WINDOWS SERVER         │   │
+│  │ 192.168.120.130        │    │ 192.168.120.131        │   │
+│  │                        │    │                        │   │
+│  │ Wazuh Agent            │    │ Wazuh Agent + Sysmon   │   │
+│  │ Auditd                 │    │ Windows Event Logging  │   │
+│  │ Suricata (NDR)         │    │                        │   │
+│  └────────────┬───────────┘    └────────────┬───────────┘   │
+│               └──────────────┬───────────────┘               │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-| Stage | Tooling | Output |
-|---|---|---|
-| Collection | Wazuh, Suricata, Sysmon, Auditd | Logs, telemetry, and events |
-| Correlation | Wazuh | High-confidence alerts based on combined signals |
-| Enrichment | MISP, Shuffle | Threat context and automated triage |
-| Response | Wazuh, TheHive, Grafana | Action, case creation, and operational visibility |
+```text
+            Logs + telemetry (TCP/UDP 1514)
+                         │
+                         ▼
+```
 
-## Operational Goal
+### SOC Server
 
-The goal is to validate that a malicious technique mapped to MITRE ATT&CK can be reproduced in the lab, detected by the SOC, correlated across multiple systems, and acted on without requiring commercial tooling.
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                    SOC SERVER                               │
+│             192.168.120.129 — Docker Stack                  │
+│                                                             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │    WAZUH     │  │  SURICATA    │  │    MISP      │      │
+│  │   SIEM/EDR   │  │  eve.json    │  │ Threat Intel │      │
+│  │   Port 443   │  │  Ingestion   │  │  Port 8443   │      │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘      │
+│         └──────────────┬───┴───────────────┘                │
+│                        │ alerts + IOC enrichment            │
+│                        ▼                                    │
+│              ┌──────────────────────┐                       │
+│              │   SHUFFLE (SOAR)     │                       │
+│              │      Port 3001       │                       │
+│              │ Alert → MISP →        │                       │
+│              │ TheHive → Block       │                       │
+│              └──────────┬───────────┘                       │
+│                         │                                   │
+│                         ▼                                   │
+│              ┌──────────────────────┐                       │
+│              │      THEHIVE         │                       │
+│              │  Case Management     │                       │
+│              │      Port 9001       │                       │
+│              └──────────────────────┘                       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
-In other words, the architecture is not just a stack of tools — it is a practical security control loop:
+### Attack-to-response path
 
-Attack -> Detection -> Correlation -> Investigation -> Response
+```text
+Kali attack  →  Ubuntu / Windows telemetry  →  Wazuh + Suricata
+             →  Shuffle workflow  →  MISP enrichment  →  TheHive case
+```
 
+The diagram focuses on the roles and direction of data: Kali generates activity, the two servers provide endpoint telemetry, and the SOC stack processes alerts into cases and response actions.
