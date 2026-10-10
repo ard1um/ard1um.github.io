@@ -36,110 +36,108 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
 
 ## Architecture
 
-The lab has three parts: the attack source, the monitored servers, and the SOC platform. Follow the arrows to see how activity and telemetry move through the environment.
+### Attacks
+
+<div class="architecture-card">
+  <strong>Kali Linux <span class="architecture-muted">— Red Team</span></strong>
+  <p><code>192.168.120.128</code></p>
+  <p><strong>Tools:</strong> Nmap · Hydra · Metasploit</p>
+  <p><strong>Activity:</strong> Reconnaissance · Brute force · Exploitation</p>
+</div>
+
+<p class="architecture-flow">Attack activity targets the monitored servers below.</p>
+
+### Our Servers
+
+<div class="architecture-hosts">
+  <div class="architecture-card">
+    <strong>Ubuntu Victim <span class="architecture-muted">— Linux</span></strong>
+    <p><code>192.168.120.130</code></p>
+    <ul>
+      <li>Wazuh Agent</li>
+      <li>Auditd</li>
+      <li>Suricata (NDR)</li>
+    </ul>
+  </div>
+  <div class="architecture-card">
+    <strong>Windows Server 2019</strong>
+    <p><code>192.168.120.131</code></p>
+    <ul>
+      <li>Wazuh Agent + Sysmon</li>
+      <li>Windows Event Logging</li>
+    </ul>
+  </div>
+</div>
+
+<p class="architecture-flow">Logs and telemetry → TCP/UDP 1514 → SOC Server</p>
+
+### SOC Server
+
+<div class="architecture-card">
+  <strong>SOC Server <span class="architecture-muted">— Docker Stack</span></strong>
+  <p><code>192.168.120.129</code></p>
+</div>
+
+<div class="architecture-services">
+  <div class="architecture-card">
+    <strong>Wazuh</strong>
+    <p>SIEM + EDR</p>
+    <p class="architecture-muted">Dashboard · Port 443</p>
+  </div>
+  <div class="architecture-card">
+    <strong>Suricata</strong>
+    <p>Network Detection (NDR)</p>
+    <p class="architecture-muted">eve.json ingestion</p>
+  </div>
+  <div class="architecture-card">
+    <strong>MISP</strong>
+    <p>Threat Intelligence</p>
+    <p class="architecture-muted">IOC enrichment · Port 8443</p>
+  </div>
+</div>
+
+<p class="architecture-flow">Wazuh alerts + threat intelligence → Shuffle SOAR · Port 3001</p>
+
+<div class="architecture-card">
+  <strong>Shuffle <span class="architecture-muted">— SOAR</span></strong>
+  <p>Automated workflow: alert → enrich → orchestrate</p>
+  <p class="architecture-muted">Alert → MISP → TheHive → Telegram → Block</p>
+</div>
+
+<p class="architecture-flow">Incident case management</p>
+
+<div class="architecture-card">
+  <strong>TheHive</strong>
+  <p>Case Management · Port 9001</p>
+</div>
 
 <style>
-.soc-architecture, .soc-architecture * { box-sizing: border-box; }
-.soc-architecture { margin: 1.5rem 0; color: #e2e8f0; font: 15px/1.5 system-ui, sans-serif; }
-.soc-architecture section { padding: 1.25rem; border: 1px solid; border-radius: 16px; }
-.soc-architecture h3 { display: flex; align-items: center; gap: .65rem; margin: 0 0 1rem; color: #f8fafc; font-size: 1.05rem; }
-.soc-architecture h3 span { display: inline-grid; width: 2rem; height: 2rem; place-items: center; border-radius: 50%; color: #0f172a; font-size: .9rem; }
-.soc-attack { background: #211b30; border-color: #8b5cf6 !important; }
-.soc-attack h3 span { background: #a78bfa; }
-.soc-hosts { background: #172827; border-color: #14b8a6 !important; }
-.soc-hosts h3 span { background: #5eead4; }
-.soc-core { background: #1b2232; border-color: #60a5fa !important; }
-.soc-core h3 span { background: #93c5fd; }
-.soc-card { padding: 1rem; border: 1px solid #475569; border-radius: 12px; background: rgba(15, 23, 42, .55); }
-.soc-card strong { display: block; margin-bottom: .2rem; color: #fff; font-size: 1rem; }
-.soc-meta { color: #cbd5e1; font-size: .88rem; }
-.soc-tools, .soc-services, .soc-output { display: grid; gap: .75rem; }
-.soc-tools { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 1rem; }
-.soc-tools span { padding: .45rem .6rem; border-radius: 999px; background: #34294b; color: #ddd6fe; text-align: center; font-size: .85rem; font-weight: 700; }
-.soc-services { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.soc-output { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.soc-service-wazuh { border-color: #818cf8; }
-.soc-service-suricata { border-color: #38bdf8; }
-.soc-service-misp { border-color: #fbbf24; }
-.soc-service-shuffle { max-width: 36rem; margin: 0 auto; border: 1px solid #c084fc; background: #2b2140; text-align: center; }
-.soc-service-shuffle strong { color: #f3e8ff; }
-.soc-service-hive { border-color: #fb7185; }
-.soc-service-response { border-color: #f97316; }
-.soc-connector { padding: .65rem .25rem; color: #94a3b8; text-align: center; font-size: .82rem; font-weight: 700; }
-.soc-connector b { display: block; color: #38bdf8; font-size: 1.3rem; line-height: 1.2; }
-.soc-flow { margin-top: 1rem; color: #cbd5e1; font-size: .9rem; }
-@media (max-width: 600px) {
-  .soc-architecture section { padding: 1rem; }
-  .soc-services { grid-template-columns: 1fr; }
-  .soc-tools span { font-size: .75rem; }
+.architecture-card {
+  padding: 1rem;
+  border: 1px solid var(--default_stroke);
+  border-radius: 10px;
+  background: var(--default_hl_bg);
+}
+.architecture-card p {
+  margin: .35rem 0 0;
+}
+.architecture-card ul {
+  margin-bottom: 0;
+}
+.architecture-muted {
+  color: var(--default_dim_fg);
+  font-size: .9em;
+}
+.architecture-hosts,
+.architecture-services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: .75rem;
+}
+.architecture-flow {
+  margin: .75rem 0;
+  color: var(--default_accent);
+  text-align: center;
+  font-weight: 600;
 }
 </style>
-
-<div class="soc-architecture">
-  <section class="soc-attack">
-    <h3><span>1</span> Attacks</h3>
-    <div class="soc-card">
-      <strong>Kali Linux <span class="soc-meta">· Red Team</span></strong>
-      <div class="soc-meta">192.168.120.128</div>
-      <div class="soc-tools"><span>Nmap</span><span>Hydra</span><span>Metasploit</span></div>
-      <div class="soc-meta" style="margin-top: .8rem;">Reconnaissance · Brute force · Exploitation</div>
-    </div>
-  </section>
-
-  <div class="soc-connector">ATTACK ACTIVITY<b>↓</b></div>
-
-  <section class="soc-hosts">
-    <h3><span>2</span> Our Servers</h3>
-    <div class="soc-output">
-      <div class="soc-card">
-        <strong>Ubuntu Victim</strong>
-        <div class="soc-meta">Linux · 192.168.120.130</div>
-        <hr style="border: 0; border-top: 1px solid #3d5b60; margin: .8rem 0;">
-        <div>Wazuh Agent</div>
-        <div>Auditd</div>
-        <div>Suricata <span class="soc-meta">· NDR</span></div>
-      </div>
-      <div class="soc-card">
-        <strong>Windows Server</strong>
-        <div class="soc-meta">192.168.120.131</div>
-        <hr style="border: 0; border-top: 1px solid #3d5b60; margin: .8rem 0;">
-        <div>Wazuh Agent + Sysmon</div>
-        <div>Windows Event Logging</div>
-      </div>
-    </div>
-  </section>
-
-  <div class="soc-connector">LOGS + TELEMETRY · TCP/UDP 1514<b>↓</b></div>
-
-  <section class="soc-core">
-    <h3><span>3</span> SOC Server</h3>
-    <div class="soc-meta" style="margin: -.4rem 0 1rem 2.65rem;">192.168.120.129 · Docker Stack</div>
-    <div class="soc-services">
-      <div class="soc-card soc-service-wazuh">
-        <strong>Wazuh</strong><div>SIEM + EDR</div><div class="soc-meta">Dashboard · Port 443</div>
-      </div>
-      <div class="soc-card soc-service-suricata">
-        <strong>Suricata</strong><div>Network Detection · NDR</div><div class="soc-meta">eve.json ingestion</div>
-      </div>
-      <div class="soc-card soc-service-misp">
-        <strong>MISP</strong><div>Threat Intelligence</div><div class="soc-meta">IOC enrichment · Port 8443</div>
-      </div>
-    </div>
-    <div class="soc-connector">ALERTS + CONTEXT<b>↓</b></div>
-    <div class="soc-card soc-service-shuffle">
-      <strong>Shuffle · SOAR</strong>
-      <div>Port 3001 · Alert → Enrich → Orchestrate</div>
-      <div class="soc-meta">Automated workflow</div>
-    </div>
-    <div class="soc-connector"><b>↓</b></div>
-    <div class="soc-output">
-      <div class="soc-card soc-service-hive">
-        <strong>TheHive</strong><div>Case Management</div><div class="soc-meta">Port 9001 · Incident tracking</div>
-      </div>
-      <div class="soc-card soc-service-response">
-        <strong>Response Action</strong><div>For example: block or escalate</div>
-      </div>
-    </div>
-  </section>
-  <p class="soc-flow"><strong>Flow:</strong> Kali generates activity → endpoints produce telemetry → the SOC detects and enriches alerts → Shuffle coordinates a case and response.</p>
-</div>
