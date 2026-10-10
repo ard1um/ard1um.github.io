@@ -1,10 +1,12 @@
 ---
-title: "Adversary Emulation Using Atomic Red Team"
-date: 2026-04-10
-description: "A practical exploration of MITRE ATT&CK techniques using Atomic Red Team...from adversary simulation to defensive validation."
+title: "Automated Threat Detection & Response"
+date: 2026-05-10
+description: "A practical SOC lab that detects attacks, enriches alerts with threat intelligence and responds automatically"
 tags:
   - linux
   - SIEM
+  - SOC
+  - SOAR
 image: /images/xsskernel/berserk.jpg
 ---
 
