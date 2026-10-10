@@ -40,7 +40,7 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
                               +------------------------------+
                               |           ATTACKS            |
                               |   KALI LINUX - Red Team      |
-                              |      192.168.120.128         |
+                              |      192.168.100.30          |
                               |  Nmap | Hydra | Metasploit   |
                               | Recon | Brute force | Exploit|
                               +---------------+--------------+
@@ -51,7 +51,7 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
                           v                                       v
        +--------------------------------+       +--------------------------------+
        |    Ubuntu Victim (Linux)       |       |        Windows Server          |
-       |       192.168.120.130          |       |       192.168.120.131          |
+       |       192.168.100.10           |       |       192.168.100.20           |
        |     Wazuh Agent | Auditd       |       |    Wazuh Agent | Sysmon        |
        |     Suricata (NDR)             |       |    Windows Event Logging       |
        +---------------+----------------+       +----------------+---------------+
@@ -62,7 +62,7 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
                                             |
                                             v
        +-----------------------------------------------------------------------+
-       |                    SOC SERVER - 192.168.120.129                       |
+       |                    SOC SERVER - 192.168.100.11                        |
        |                           Docker Stack                                |
        |                                                                       |
        |  +------------------+  +------------------+  +---------------------+  |
