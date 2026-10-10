@@ -50,7 +50,7 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
                           |                                       |
                           v                                       v
        +--------------------------------+       +--------------------------------+
-       |    Ubuntu Victim (Linux)       |       |     Windows Server 2019        |
+       |    Ubuntu Victim (Linux)       |       |        Windows Server          |
        |       192.168.120.130          |       |       192.168.120.131          |
        |     Wazuh Agent | Auditd       |       |    Wazuh Agent | Sysmon        |
        |     Suricata (NDR)             |       |    Windows Event Logging       |
@@ -79,8 +79,8 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
        |                    | Shuffle (SOAR)         |                         |
        |                    | Port 3001              |                         |
        |                    | Alert -> MISP ->       |                         |
-       |                    | TheHive -> Telegram    |                         |
-       |                    | -> Block               |                         |
+       |                    | TheHive -> Block       |                         |
+       |                    |                        |                         |
        |                    +-----------+------------+                         |
        |                                |                                      |
        |                                v                                      |
