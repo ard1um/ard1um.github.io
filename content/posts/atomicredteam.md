@@ -39,21 +39,21 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
 ```
                               +------------------------------+
                               |           ATTACKS            |
-                              | KALI LINUX - Red Team        |
-                              | 192.168.120.128              |
-                              | Nmap | Hydra | Metasploit    |
+                              |   KALI LINUX - Red Team      |
+                              |      192.168.120.128         |
+                              |  Nmap | Hydra | Metasploit   |
                               | Recon | Brute force | Exploit|
                               +---------------+--------------+
                                               |
-                                   Attack activity
+                                        Attack activity
                           +-------------------+-------------------+
                           |                                       |
                           v                                       v
        +--------------------------------+       +--------------------------------+
-       | Ubuntu Victim (Linux)          |       | Windows Server 2019            |
-       | 192.168.120.130                |       | 192.168.120.131                |
-       | Wazuh Agent | Auditd           |       | Wazuh Agent | Sysmon           |
-       | Suricata (NDR)                 |       | Windows Event Logging          |
+       |    Ubuntu Victim (Linux)       |       |     Windows Server 2019        |
+       |       192.168.120.130          |       |       192.168.120.131          |
+       |     Wazuh Agent | Auditd       |       |    Wazuh Agent | Sysmon        |
+       |     Suricata (NDR)             |       |    Windows Event Logging       |
        +---------------+----------------+       +----------------+---------------+
                        |                                          |
                        +--------------------+---------------------+
@@ -63,7 +63,7 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
                                             v
        +-----------------------------------------------------------------------+
        |                    SOC SERVER - 192.168.120.129                       |
-       |                         Docker Stack                                  |
+       |                           Docker Stack                                |
        |                                                                       |
        |  +------------------+  +------------------+  +---------------------+  |
        |  | Wazuh            |  | Suricata         |  | MISP                |  |
@@ -73,7 +73,7 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
        |           |                     |                       |             |
        |           +---------------------+-----------------------+             |
        |                                 |                                     |
-       |                    Alerts + threat context                            |
+       |                      Alerts + threat context                          |
        |                                 v                                     |
        |                    +------------------------+                         |
        |                    | Shuffle (SOAR)         |                         |
