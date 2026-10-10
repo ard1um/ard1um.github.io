@@ -36,37 +36,58 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
 
 ## Architecture
 
-### Attacks
-
-**Kali Linux — Red Team**
-
-IP address: `192.168.120.128`
-
-| Tools | Attack activity |
-|---|---|
-| Nmap, Hydra, Metasploit | Reconnaissance, brute force, exploitation |
-
-Attack activity targets both monitored servers.
-
-### Our Servers
-
-| Server | Address | Monitoring and telemetry |
-|---|---|---|
-| Ubuntu Victim (Linux) | `192.168.120.130` | Wazuh Agent, Auditd, Suricata (NDR) |
-| Windows Server 2019 | `192.168.120.131` | Wazuh Agent, Sysmon, Windows Event Logging |
-
-Both servers forward logs and telemetry to the SOC Server over **TCP/UDP 1514**.
-
-### SOC Server
-
-**Docker Stack** · IP address: `192.168.120.129`
-
-| Service | Role | Port / input |
-|---|---|---|
-| Wazuh | SIEM + EDR | Dashboard: `443` |
-| Suricata | Network Detection (NDR) | `eve.json` ingestion |
-| MISP | Threat intelligence and IOC enrichment | `8443` |
-| Shuffle (SOAR) | Automates alert enrichment and response workflows | `3001` |
-| TheHive | Case management | `9001` |
-
-**Response workflow:** Wazuh alert → MISP enrichment → TheHive case → Telegram notification → block.
+```text
+                              +------------------------------+
+                              |           ATTACKS            |
+                              | KALI LINUX - Red Team        |
+                              | 192.168.120.128              |
+                              | Nmap | Hydra | Metasploit    |
+                              | Recon | Brute force | Exploit|
+                              +---------------+--------------+
+                                              |
+                                   Attack activity
+                          +-------------------+-------------------+
+                          |                                       |
+                          v                                       v
+       +--------------------------------+       +--------------------------------+
+       | Ubuntu Victim (Linux)          |       | Windows Server 2019            |
+       | 192.168.120.130                |       | 192.168.120.131                |
+       | Wazuh Agent | Auditd           |       | Wazuh Agent | Sysmon           |
+       | Suricata (NDR)                 |       | Windows Event Logging          |
+       +---------------+----------------+       +----------------+---------------+
+                       |                                          |
+                       +--------------------+---------------------+
+                                            |
+                              Logs + telemetry (TCP/UDP 1514)
+                                            |
+                                            v
+       +-----------------------------------------------------------------------+
+       |                    SOC SERVER - 192.168.120.129                       |
+       |                         Docker Stack                                  |
+       |                                                                       |
+       |  +------------------+  +------------------+  +---------------------+  |
+       |  | Wazuh            |  | Suricata         |  | MISP                |  |
+       |  | SIEM + EDR       |  | NDR              |  | Threat Intelligence |  |
+       |  | Dashboard: 443   |  | eve.json         |  | IOC enrichment: 8443|  |
+       |  +--------+---------+  +--------+---------+  +----------+----------+  |
+       |           |                     |                       |             |
+       |           +---------------------+-----------------------+             |
+       |                                 |                                     |
+       |                    Alerts + threat context                            |
+       |                                 v                                     |
+       |                    +------------------------+                         |
+       |                    | Shuffle (SOAR)         |                         |
+       |                    | Port 3001              |                         |
+       |                    | Alert -> MISP ->       |                         |
+       |                    | TheHive -> Telegram    |                         |
+       |                    | -> Block               |                         |
+       |                    +-----------+------------+                         |
+       |                                |                                      |
+       |                                v                                      |
+       |                    +------------------------+                         |
+       |                    | TheHive                |                         |
+       |                    | Case Management        |                         |
+       |                    | Port 9001              |                         |
+       |                    +------------------------+                         |
+       +-----------------------------------------------------------------------+
+```
