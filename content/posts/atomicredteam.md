@@ -36,7 +36,7 @@ Kali            Wazuh          Wazuh            MISP            Wazuh
 
 ## Architecture
 
-```text
+```
                               +------------------------------+
                               |           ATTACKS            |
                               | KALI LINUX - Red Team        |
